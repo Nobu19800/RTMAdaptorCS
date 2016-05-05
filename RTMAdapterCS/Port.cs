@@ -14,10 +14,11 @@ namespace RTC
     using DataType_t = Int32;
     using Port_t = Int32;
 
-    
-    public class PortBase {
 
-        const string rtmadapter_dll = Manager.rtmadapter_dll;
+    public class PortBase
+    {
+
+        static const string rtmadapter_dll = Manager.rtmadapter_dll;
 
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         protected static extern Result_t OutPort_write(Port_t p);
@@ -45,13 +46,14 @@ namespace RTC
             return Port_getBuffer();
         }
     }
-    
-    public class InPort<Type> : PortBase 
+
+    public class InPort<Type> : PortBase
         where Type : DataTypeBase
     {
         private Type _t;
 
-        public InPort(string name, Type typ) : base(name, typ.createInPort(name))
+        public InPort(string name, Type typ)
+            : base(name, typ.createInPort(name))
         {
             _t = typ;
         }
@@ -65,13 +67,14 @@ namespace RTC
         }
     }
 
-    public class OutPort<Type> : PortBase 
+    public class OutPort<Type> : PortBase
         where Type : DataTypeBase
     {
 
         private Type _t;
 
-        public OutPort(string name, Type typ) : base(name, typ.createOutPort(name))
+        public OutPort(string name, Type typ)
+            : base(name, typ.createOutPort(name))
         {
             _t = typ;
         }

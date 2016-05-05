@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-///using System.Threading.Tasks;
 using RTC;
 using System.Runtime.InteropServices;
+
+
 
 namespace OpenRTM_aist
 {
@@ -17,7 +18,7 @@ namespace OpenRTM_aist
     public class Manager
     {
 
-        public const string rtmadapter_dll = "RTMAdapter";
+        public static const string rtmadapter_dll = "RTMAdapter";
 
         [DllImport(rtmadapter_dll)]
         extern static Manager_t Manager_initManager(Int32 argc, string[] argv);

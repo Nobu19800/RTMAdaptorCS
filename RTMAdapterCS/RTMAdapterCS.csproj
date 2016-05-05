@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BasicDataType.cs" />
     <Compile Include="DataTypeBase.cs" />
     <Compile Include="Manager.cs" />
     <Compile Include="Port.cs" />

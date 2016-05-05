@@ -15,7 +15,10 @@ namespace RTC
 
     public abstract class RTComponent {
 
-        const string rtmadapter_dll = OpenRTM_aist.Manager.rtmadapter_dll;
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate Int32 RtcCallback(Int32 ec_id);
+
+        static const string rtmadapter_dll = OpenRTM_aist.Manager.rtmadapter_dll;
 
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         private static extern Result_t RTC_addInPort(RTC_t rtc, string name, Port_t port);
@@ -26,17 +29,6 @@ namespace RTC
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         private static extern Result_t RTC_deletePort(RTC_t rtc, Port_t port);
 
-        /*
-        private static extern Result_t RTC_onAborting_listen(RTC_t rtc, int(*callback)(int));
-
-        private static extern Result_t RTC_onError_listen(RTC_t rtc, int(*callback)(int));
-
-        private static extern Result_t RTC_onReset_listen(RTC_t rtc, int(*callback)(int));
-        */
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate Int32 RtcCallback(Int32 ec_id);
-
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         private static extern Result_t RTC_onExecute_listen(RTC_t rtc, RtcCallback callback);
 
@@ -46,12 +38,26 @@ namespace RTC
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         private static extern Result_t RTC_onDeactivate_listen(RTC_t rtc, RtcCallback callback);
 
+        [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
+        private static extern Result_t RTC_onAborting_listen(RTC_t rtc, RtcCallback callback);
+
+        [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
+        private static extern Result_t RTC_onError_listen(RTC_t rtc, RtcCallback callback);
+
+        [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
+        private static extern Result_t RTC_onReset_listen(RTC_t rtc, RtcCallback callback);
+
         RTC_t _r;
 
         public RTComponent(RTC_t r)
         {
             _r = r;
+            RTC_onActivate_listen(_r, onActivated);
+            RTC_onDeactivate_listen(_r, onDeactivated);
             RTC_onExecute_listen(_r, onExecute);
+            RTC_onAborting_listen(_r, onAborting);
+            RTC_onError_listen(_r, onError);
+            RTC_onReset_listen(_r, onReset);
         }
 
         public void addOutPort(PortBase port)
@@ -73,6 +79,9 @@ namespace RTC
         public abstract int onActivated(int ec_id);
         public abstract int onDeactivated(int ec_id);
         public abstract int onExecute(int ec_id);
+        public abstract int onError(int ec_id);
+        public abstract int onReset(int ec_id);
+        public abstract int onAborting(int ec_id);
     }
 
 }
