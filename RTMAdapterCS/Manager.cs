@@ -18,12 +18,12 @@ namespace OpenRTM_aist
     public class Manager
     {
 
-        public static const string rtmadapter_dll = "RTMAdapter";
+        public const string rtmadapter_dll = "RTMAdapter.dll";
 
-        [DllImport(rtmadapter_dll)]
+        [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         extern static Manager_t Manager_initManager(Int32 argc, string[] argv);
 
-        [DllImport(rtmadapter_dll)]
+        [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         extern static Result_t Manager_init(Manager_t m, Int32 argc, string[] argv);
 
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
@@ -50,9 +50,14 @@ namespace OpenRTM_aist
 
         private Manager(Int32 argc, string[] argv)
         {
+            byte[] d = {0x00};
             _m = Manager_initManager(argc, argv);
         }
 
+         ~Manager()
+        {
+            //Manager_shutdown(_m);
+        }
 
         public static Manager initManager(string[] args)
         {
@@ -96,7 +101,7 @@ namespace OpenRTM_aist
             //RTComponent rtc = new RTComponent(r);
             //rtc.initialize();
             //return rtc;
-            return null;
+            return new  RTMAdapter(r);
         }
     }
 }

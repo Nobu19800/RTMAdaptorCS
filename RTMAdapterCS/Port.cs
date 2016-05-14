@@ -18,7 +18,7 @@ namespace RTC
     public class PortBase
     {
 
-        static const string rtmadapter_dll = Manager.rtmadapter_dll;
+        const string rtmadapter_dll = Manager.rtmadapter_dll;
 
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         protected static extern Result_t OutPort_write(Port_t p);

@@ -18,7 +18,7 @@ namespace RTC
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         delegate Int32 RtcCallback(Int32 ec_id);
 
-        static const string rtmadapter_dll = OpenRTM_aist.Manager.rtmadapter_dll;
+        const string rtmadapter_dll = OpenRTM_aist.Manager.rtmadapter_dll;
 
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         private static extern Result_t RTC_addInPort(RTC_t rtc, string name, Port_t port);
