@@ -18,7 +18,7 @@ namespace RTC
     public class PortBase
     {
 
-        static const string rtmadapter_dll = Manager.rtmadapter_dll;
+        const string rtmadapter_dll = Manager.rtmadapter_dll;
 
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         protected static extern Result_t OutPort_write(Port_t p);
@@ -60,10 +60,15 @@ namespace RTC
 
         public Int32 read()
         {
-            int result;
+            int result = 0;
             InPort_read(base.d(), out result);
             _t.down();
             return result;
+        }
+
+        public bool isNew()
+        {
+            return _t.InPortIsNew(_port);
         }
     }
 

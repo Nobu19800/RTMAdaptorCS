@@ -13,17 +13,30 @@ namespace OpenRTM_aist
     using Result_t = Int32;
     using RTC_t = Int32;
     using Port_t = Int32;
-
-
+    
     public class Manager
     {
+        public const string rtmadapter_dll = "RTMAdapter.dll";
 
-        public static const string rtmadapter_dll = "RTMAdapter";
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void _ModuleInitProc(Manager_t m);
 
-        [DllImport(rtmadapter_dll)]
+        public delegate void ModuleInitProc(Manager m);
+        
+        public delegate RTComponent RTCFactoryMethod(RTC_t rtc);
+
+        Manager_t _m;
+
+        static Manager __manager;
+
+        private ModuleInitProc _moduleInitProc;
+
+        private Dictionary<string, RTCFactoryMethod> factoryDictionary = new Dictionary<string, RTCFactoryMethod>();
+
+        [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         extern static Manager_t Manager_initManager(Int32 argc, string[] argv);
 
-        [DllImport(rtmadapter_dll)]
+        [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         extern static Result_t Manager_init(Manager_t m, Int32 argc, string[] argv);
 
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
@@ -44,15 +57,32 @@ namespace OpenRTM_aist
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         extern static Result_t Manager_shutdown(Manager_t m);
 
-        Manager_t _m;
+        [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
+        extern static Result_t Manager_setModuleInitProc(Manager_t m, _ModuleInitProc proc);
 
-        static Manager __manager;
+        [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
+        extern static Result_t Manager_RTMAdapter_init(Manager_t m);
+
+        [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
+        extern static Result_t Manager_setRTMAdapterSpec(Manager_t m, string key, string value);
+
+
+
+        static Manager instance()
+        {
+            return __manager;
+        }
 
         private Manager(Int32 argc, string[] argv)
         {
+            byte[] d = { 0x00 };
             _m = Manager_initManager(argc, argv);
         }
 
+        ~Manager()
+        {
+            /// Manager_shutdown(_m);
+        }
 
         public static Manager initManager(string[] args)
         {
@@ -68,9 +98,29 @@ namespace OpenRTM_aist
             Manager_init(_m, args.Length, args);
         }
 
-        public void setRTMAdapterModuleInitProc()
+        public void RTMAdapter_init(Dictionary<string, string> specs, RTCFactoryMethod factory)
         {
-            Manager_setRTMAdapterModuleInitProc(_m);
+            foreach (var spec in specs) {
+               Manager_setRTMAdapterSpec(_m, spec.Key, spec.Value);
+            }
+            Manager_RTMAdapter_init(_m);
+            factoryDictionary[specs["implementation_id"]] = factory;
+        }
+
+        private void DefaultModuleInitProc(Manager_t m)
+        {
+
+        }
+
+        private static void myModuleInitCallBack(Manager_t m)
+        {
+            Manager.instance()._moduleInitProc(Manager.instance());
+        }
+
+        public void setModuleInitProc(ModuleInitProc proc)
+        {
+            _moduleInitProc = proc;
+            Manager_setModuleInitProc(_m, myModuleInitCallBack);
         }
 
         public void activateManager()
@@ -83,20 +133,22 @@ namespace OpenRTM_aist
             Manager_runManager(_m, flag ? 1 : 0);
         }
 
-        public void createComponent(string identifier)
+        public RTC.RTComponent createComponent(string identifier)
         {
-            Manager_createComponent(_m, identifier);
+            try
+            {
+                RTCFactoryMethod factory = factoryDictionary[identifier];
+                RTC_t rtc = Manager_createComponent(_m, identifier);
+                RTComponent r =  factory(rtc);
+                r.initialize();
+                return r;
+            }
+            catch (KeyNotFoundException ex)
+            {
+                System.Console.Write("Loading RTComponent (" + identifier + ") failed. Reason: Key Not Found.");
+                return null;
+            }
         }
 
-        public RTComponent createAdapterComponent()
-        {
-            RTC_t r = Manager_createAdapterComponent(_m);
-            if (r < 0) { return null; }
-
-            //RTComponent rtc = new RTComponent(r);
-            //rtc.initialize();
-            //return rtc;
-            return null;
-        }
     }
 }
