@@ -16,7 +16,7 @@ namespace OpenRTM_aist
     
     public class Manager
     {
-        public const string rtmadapter_dll = "RTMAdapter.dll";
+        public const string rtmadapter_dll = "RTMAdapterd.dll";
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void _ModuleInitProc(Manager_t m);
@@ -64,7 +64,7 @@ namespace OpenRTM_aist
         extern static Result_t Manager_RTMAdapter_init(Manager_t m);
 
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
-        extern static Result_t Manager_setRTMAdapterSpec(Manager_t m, string key, string value);
+        extern static Result_t Manager_setRTMAdapterSpec(Manager_t m, [MarshalAs(UnmanagedType.LPArray)] byte[] key, [MarshalAs(UnmanagedType.LPArray)] byte[] value);
 
 
 
@@ -101,7 +101,7 @@ namespace OpenRTM_aist
         public void RTMAdapter_init(Dictionary<string, string> specs, RTCFactoryMethod factory)
         {
             foreach (var spec in specs) {
-               Manager_setRTMAdapterSpec(_m, spec.Key, spec.Value);
+               Manager_setRTMAdapterSpec(_m, Encoding.ASCII.GetBytes(spec.Key), Encoding.ASCII.GetBytes(spec.Value));
             }
             Manager_RTMAdapter_init(_m);
             factoryDictionary[specs["implementation_id"]] = factory;
