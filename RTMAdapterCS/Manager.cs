@@ -16,7 +16,11 @@ namespace OpenRTM_aist
     
     public class Manager
     {
+#if DEBUG
         public const string rtmadapter_dll = "RTMAdapterd.dll";
+#else
+        public const string rtmadapter_dll = "RTMAdapter.dll";
+#endif
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void _ModuleInitProc(Manager_t m);
@@ -58,6 +62,9 @@ namespace OpenRTM_aist
         extern static Result_t Manager_shutdown(Manager_t m);
 
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
+        extern static Result_t Manager_join(Manager_t m);
+
+        [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         extern static Result_t Manager_setModuleInitProc(Manager_t m, _ModuleInitProc proc);
 
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
@@ -96,6 +103,18 @@ namespace OpenRTM_aist
         public void init(string[] args)
         {
             Manager_init(_m, args.Length, args);
+        }
+
+        public void shutdown()
+        {
+            Manager_shutdown(_m);
+            __manager = null;
+        }
+
+        public void join()
+        {
+            Manager_join(_m);
+            __manager = null;
         }
 
         public void RTMAdapter_init(Dictionary<string, string> specs, RTCFactoryMethod factory)
