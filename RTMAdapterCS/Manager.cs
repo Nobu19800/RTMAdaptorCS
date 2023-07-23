@@ -14,6 +14,7 @@ namespace OpenRTM_aist
     using RTC_t = Int32;
     using Port_t = Int32;
     
+
     public class Manager
     {
 #if DEBUG
@@ -73,6 +74,8 @@ namespace OpenRTM_aist
         [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
         extern static Result_t Manager_setRTMAdapterSpec(Manager_t m, [MarshalAs(UnmanagedType.LPArray)] byte[] key, [MarshalAs(UnmanagedType.LPArray)] byte[] value);
 
+        [DllImport(rtmadapter_dll, CallingConvention = CallingConvention.Cdecl)]
+        extern static Manager_t Manager_startManager(Int32 argc, string[] argv, _ModuleInitProc proc, Int32 flag);
 
 
         static Manager instance()
@@ -86,6 +89,11 @@ namespace OpenRTM_aist
             _m = Manager_initManager(argc, argv);
         }
 
+        private Manager()
+        {
+            byte[] d = { 0x00 };
+        }
+
         ~Manager()
         {
             /// Manager_shutdown(_m);
@@ -97,6 +105,14 @@ namespace OpenRTM_aist
             {
                 __manager = new Manager(args.Length, args);
             }
+            return __manager;
+        }
+
+        public static Manager startManager(string[] args, ModuleInitProc proc, bool flag)
+        {
+            __manager = new Manager();
+            __manager._moduleInitProc = proc;
+            __manager._m = Manager_startManager(args.Length, args, myModuleInitCallBack, flag ? 1 : 0);
             return __manager;
         }
 

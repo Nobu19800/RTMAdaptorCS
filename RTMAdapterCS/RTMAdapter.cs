@@ -17,7 +17,7 @@ namespace RTC
     {
         
         public RTMAdapter(RTC_t r)
-            : base(r)
+            : base(r, false)
         {
             
         }
